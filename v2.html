@@ -1,79 +1,387 @@
-<style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Label Printer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            overflow: hidden;
+            height: 100vh;
+        }
+        .sidebar {
+            height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+        .preview-area {
+            height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+        .label-item {
+            cursor: move;
+            transition: all 0.2s;
+        }
+        .label-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .label-item [contenteditable="true"]:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+            border-radius: 2px;
+        }
+        .delete-btn {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .label-item:hover .delete-btn {
+            opacity: 1;
+        }
+        @media print {
+            body {
+                overflow: visible;
+                height: auto;
+            }
+            .sidebar, h2, .no-print {
+                display: none !important;
+            }
+            .preview-area {
+                height: auto;
+                overflow: visible;
+                border: none;
+                padding: 10mm;
+            }
+            #previewArea {
+                display: grid !important;
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 5mm !important;
+                padding: 0 !important;
+            }
+            .label-item {
+                page-break-inside: avoid;
+                margin: 0 !important;
+                width: 100% !important;
+                min-width: auto !important;
+            }
+            .delete-btn {
+                display: none !important;
+            }
+            @page {
+                margin: 10mm;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex flex-col h-screen">
+        <h2 class="text-2xl font-bold p-5 bg-white shadow-sm">Sticker Printer</h2>
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        <div class="flex flex-1 overflow-hidden">
+            <!-- Sidebar -->
+            <div class="w-80 bg-white shadow-lg sidebar">
+                <div class="p-5 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Sticker Text</label>
+                        <input type="text" id="labelText" class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter text">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Top Right Text</label>
+                        <input type="text" id="topRightText" class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Optional">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Copies</label>
+                        <input type="number" id="copies" value="1" min="1" max="100" class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Text Case</label>
+                        <select id="textCase" class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="uppercase">UPPERCASE</option>
+                            <option value="lowercase">lowercase</option>
+                            <option value="capitalize">Capitalize</option>
+                            <option value="none">Normal</option>
+                        </select>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium mb-1">Font Size</label>
+                            <input type="number" id="fontSize" value="24" min="10" max="100" class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium mb-1">Padding</label>
+                            <input type="number" id="padding" value="20" min="5" max="50" class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Font Family</label>
+                        <select id="fontFamily" class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="Arial">Arial</option>
+                            <option value="Helvetica">Helvetica</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Courier New">Courier New</option>
+                            <option value="Verdana">Verdana</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Impact">Impact</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Text Color</label>
+                        <div class="flex gap-2 mb-2">
+                            <div class="w-8 h-8 rounded cursor-pointer border-2 border-transparent hover:border-blue-500" style="background:#000000" data-type="text" data-color="#000000"></div>
+                            <div class="w-8 h-8 rounded cursor-pointer border-2 border-transparent hover:border-blue-500" style="background:#333333" data-type="text" data-color="#333333"></div>
+                            <div class="w-8 h-8 rounded cursor-pointer border-2 border-transparent hover:border-blue-500" style="background:#0066cc" data-type="text" data-color="#0066cc"></div>
+                            <div class="w-8 h-8 rounded cursor-pointer border-2 border-transparent hover:border-blue-500" style="background:#cc0000" data-type="text" data-color="#cc0000"></div>
+                            <div class="w-8 h-8 rounded cursor-pointer border-2 border-transparent hover:border-blue-500" style="background:#00aa00" data-type="text" data-color="#00aa00"></div>
+                            <div class="w-8 h-8 rounded cursor-pointer border-2 border-transparent hover:border-blue-500" style="background:#ff6600" data-type="text" data-color="#ff6600"></div>
+                        </div>
+                        <input type="color" id="textColor" value="#333333" class="w-full h-10 rounded cursor-pointer">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Background Color</label>
+                        <div class="flex gap-2 mb-2">
+                            <div class="w-8 h-8 rounded cursor-pointer border-2 border-gray-300 hover:border-blue-500" style="background:#ffffff" data-type="bg" data-color="#ffffff"></div>
+                            <div class="w-8 h-8 rounded cursor-pointer border-2 border-transparent hover:border-blue-500" style="background:#f5f5f5" data-type="bg" data-color="#f5f5f5"></div>
+                            <div class="w-8 h-8 rounded cursor-pointer border-2 border-transparent hover:border-blue-500" style="background:#ffeb3b" data-type="bg" data-color="#ffeb3b"></div>
+                            <div class="w-8 h-8 rounded cursor-pointer border-2 border-transparent hover:border-blue-500" style="background:#ffcccc" data-type="bg" data-color="#ffcccc"></div>
+                            <div class="w-8 h-8 rounded cursor-pointer border-2 border-transparent hover:border-blue-500" style="background:#ccffcc" data-type="bg" data-color="#ccffcc"></div>
+                            <div class="w-8 h-8 rounded cursor-pointer border-2 border-transparent hover:border-blue-500" style="background:#cce5ff" data-type="bg" data-color="#cce5ff"></div>
+                        </div>
+                        <input type="color" id="bgColor" value="#ffffff" class="w-full h-10 rounded cursor-pointer">
+                    </div>
+
+                    <button id="printLabels" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded transition">
+                        🖨️ Print Stickers
+                    </button>
+
+                    <button id="clearAll" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded transition">
+                        🗑️ Clear All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview Area -->
+            <div class="flex-1 preview-area">
+                <div id="previewArea" class="p-6 flex flex-wrap gap-4 content-start min-h-full">
+                    <p class="text-gray-400 text-center w-full mt-20">Your stickers will appear here. Start typing to create stickers.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let labelCounter = 0;
+        let draggedElement = null;
+        let currentLabels = [];
+
+        function applyTextCase(text, textCase) {
+            switch(textCase) {
+                case 'uppercase': return text.toUpperCase();
+                case 'lowercase': return text.toLowerCase();
+                case 'capitalize': return text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+                default: return text;
+            }
         }
 
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            font-family: 'Poppins', sans-serif;
-            min-height: 100vh;
+        function getSettings() {
+            return {
+                text: document.getElementById('labelText').value.trim(),
+                topRight: document.getElementById('topRightText').value.trim(),
+                fontSize: document.getElementById('fontSize').value,
+                padding: document.getElementById('padding').value,
+                fontFamily: document.getElementById('fontFamily').value,
+                textColor: document.getElementById('textColor').value,
+                bgColor: document.getElementById('bgColor').value,
+                textCase: document.getElementById('textCase').value,
+                copies: parseInt(document.getElementById('copies').value) || 1
+            };
         }
-        
-        .preview-area {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: none;
-            border-radius: 20px;
-            min-height: 500px;
-            padding: 40px;
-            margin: 20px 0;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            align-content: flex-start;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            transition: all 0.3s ease;
-        }
-        
-        .label-item {
-            background: white;
-            border: none;
-            padding: 25px 35px;
-            font-weight: 600;
-            color: #333;
-            text-align: center;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            cursor: grab;
-            position: relative;
-            min-width: 220px;
-            border-radius: 15px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: fadeInUp 0.5s ease;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
+
+        function createLabel(settings) {
+            if (!settings.text) return null;
+
+            labelCounter++;
+            const displayText = applyTextCase(settings.text, settings.textCase);
+
+            const label = document.createElement('div');
+            label.className = 'label-item bg-white border border-gray-300 shadow-sm relative';
+            label.draggable = true;
+            label.id = 'label-' + labelCounter;
+            label.style.cssText = `
+                font-size: ${settings.fontSize}px;
+                font-family: ${settings.fontFamily};
+                color: ${settings.textColor};
+                background-color: ${settings.bgColor};
+                padding: ${settings.padding}px ${parseInt(settings.padding) + 10}px;
+                font-weight: bold;
+                text-align: center;
+                min-width: 200px;
+            `;
+
+            if (settings.topRight) {
+                const topRight = document.createElement('span');
+                topRight.className = 'absolute top-1 right-2 text-xs font-normal text-gray-600';
+                topRight.contentEditable = true;
+                topRight.textContent = settings.topRight;
+                topRight.addEventListener('blur', () => updateLabelData(label.id));
+                label.appendChild(topRight);
             }
-            to {
-                opacity: 1;
-                transform: translateY(0);
+
+            const mainText = document.createElement('span');
+            mainText.contentEditable = true;
+            mainText.textContent = displayText;
+            mainText.addEventListener('blur', () => updateLabelData(label.id));
+            label.appendChild(mainText);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-btn absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-sm hover:bg-red-600';
+            deleteBtn.innerHTML = '×';
+            deleteBtn.onclick = () => {
+                label.remove();
+                currentLabels = currentLabels.filter(l => l.id !== label.id);
+                if (document.querySelectorAll('.label-item').length === 0) {
+                    document.getElementById('previewArea').innerHTML = '<p class="text-gray-400 text-center w-full mt-20">Your stickers will appear here. Start typing to create stickers.</p>';
+                }
+            };
+            label.appendChild(deleteBtn);
+
+            // Drag events
+            label.addEventListener('dragstart', (e) => {
+                draggedElement = label;
+                label.style.opacity = '0.5';
+            });
+
+            label.addEventListener('dragend', () => {
+                label.style.opacity = '1';
+                draggedElement = null;
+            });
+
+            return label;
+        }
+
+        function updateLabelData(labelId) {
+            const label = document.getElementById(labelId);
+            if (!label) return;
+            
+            const index = currentLabels.findIndex(l => l.id === labelId);
+            if (index !== -1) {
+                const mainText = label.querySelector('span[contenteditable="true"]:not(.absolute)');
+                const topRight = label.querySelector('.absolute[contenteditable="true"]');
+                
+                currentLabels[index].text = mainText ? mainText.textContent : '';
+                currentLabels[index].topRight = topRight ? topRight.textContent : '';
             }
         }
-        
-        .label-item:active {
-            cursor: grabbing;
+
+        function renderLabels() {
+            const settings = getSettings();
+            const previewArea = document.getElementById('previewArea');
+            
+            // Remove placeholder
+            const placeholder = previewArea.querySelector('p.text-gray-400');
+            if (placeholder) placeholder.remove();
+
+            // Clear existing labels
+            previewArea.innerHTML = '';
+            currentLabels = [];
+
+            // Create new labels
+            for (let i = 0; i < settings.copies; i++) {
+                const label = createLabel(settings);
+                if (label) {
+                    previewArea.appendChild(label);
+                    currentLabels.push({
+                        id: label.id,
+                        text: settings.text,
+                        topRight: settings.topRight
+                    });
+                }
+            }
+
+            if (currentLabels.length === 0) {
+                previewArea.innerHTML = '<p class="text-gray-400 text-center w-full mt-20">Your stickers will appear here. Start typing to create stickers.</p>';
+            }
         }
+
+        // Auto-update on any change
+        document.getElementById('labelText').addEventListener('input', renderLabels);
+        document.getElementById('topRightText').addEventListener('input', renderLabels);
+        document.getElementById('copies').addEventListener('input', renderLabels);
+        document.getElementById('fontSize').addEventListener('input', renderLabels);
+        document.getElementById('padding').addEventListener('input', renderLabels);
+        document.getElementById('fontFamily').addEventListener('change', renderLabels);
+        document.getElementById('textColor').addEventListener('input', renderLabels);
+        document.getElementById('bgColor').addEventListener('input', renderLabels);
+        document.getElementById('textCase').addEventListener('change', renderLabels);
+
+        // Color preset clicks
+        document.querySelectorAll('[data-type="text"]').forEach(el => {
+            el.addEventListener('click', () => {
+                document.getElementById('textColor').value = el.dataset.color;
+                renderLabels();
+            });
+        });
+
+        document.querySelectorAll('[data-type="bg"]').forEach(el => {
+            el.addEventListener('click', () => {
+                document.getElementById('bgColor').value = el.dataset.color;
+                renderLabels();
+            });
+        });
+
+        // Drag and drop in preview area
+        const previewArea = document.getElementById('previewArea');
         
-        .label-top-right {
-            position: absolute;
-            top: 8px;
-            right: 12px;
-            font-size: 11px;
-            font-weight: 400;
-            color: #666;
-            background: rgba(0,0,0,0.05);
-            padding: 2px 8px;
-            border-radius: 20px;
+        previewArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const afterElement = getDragAfterElement(previewArea, e.clientX, e.clientY);
+            if (afterElement == null) {
+                previewArea.appendChild(draggedElement);
+            } else {
+                previewArea.insertBefore(draggedElement, afterElement);
+            }
+        });
+
+        function getDragAfterElement(container, x, y) {
+            const draggableElements = [...container.querySelectorAll('.label-item:not([style*="opacity: 0.5"])')];
+            
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offsetX = x - box.left - box.width / 2;
+                const offsetY = y - box.top - box.height / 2;
+                const offset = Math.sqrt(offsetX * offsetX + offsetY * offsetY);
+                
+                if (offset < closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.POSITIVE_INFINITY }).element;
         }
-        
-        .label-item:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
-        }
+
+        document.getElementById('printLabels').addEventListener('click', () => {
+            if (document.querySelectorAll('.label-item').length === 0) {
+                alert('No stickers to print. Please add stickers first.');
+                return;
+            }
+            window.print();
+        });
+
+        document.getElementById('clearAll').addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all stickers?')) {
+                document.getElementById('previewArea').innerHTML = '<p class="text-gray-400 text-center w-full mt-20">Your stickers will appear here. Start typing to create stickers.</p>';
+                document.getElementById('labelText').value = '';
+                document.getElementById('topRightText').value = '';
+                document.getElementById('copies').value = '1';
+                currentLabels = [];
+                labelCounter = 0;
+            }
+        });
+    </script>
+</body>
+</html>
