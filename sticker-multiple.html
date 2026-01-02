@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sticker Print Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printArea, #printArea * {
+                visibility: visible;
+            }
+            #printArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        .cropper-container {
+            max-height: 400px;
+        }
+
+        #printArea {
+            background: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <h1 class="text-4xl font-bold text-center text-gray-800 mb-2">Sticker Print Generator</h1>
+        <p class="text-center text-gray-600 mb-8">Upload, crop, and print multiple stickers on one page</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Panel - Controls -->
+            <div class="space-y-6">
+                <!-- Upload Section -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">1. Upload Sticker</h2>
+                    <input type="file" id="imageUpload" accept="image/*" 
+                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                </div>
+
+                <!-- Crop Section -->
+                <div id="cropSection" class="bg-white rounded-lg shadow-md p-6 hidden">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">2. Crop Sticker</h2>
+                    <div class="mb-4">
+                        <img id="cropImage" style="max-width: 100%;">
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="cropBtn" class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                            ✓ Apply Crop
+                        </button>
+                        <button id="resetCropBtn" class="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
+                            ↻ Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div id="settingsSection" class="bg-white rounded-lg shadow-md p-6 hidden">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">3. Configure Layout</h2>
+
+                    <!-- Paper Size -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Paper Size</label>
+                        <select id="paperSize" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="a4">A4 (210 × 297 mm)</option>
+                            <option value="letter">Letter (8.5 × 11 in)</option>
+                            <option value="a5">A5 (148 × 210 mm)</option>
+                        </select>
+                    </div>
+
+                    <!-- Grid Layout -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Grid Layout (Columns × Rows)</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-gray-600">Columns</label>
+                                <input type="number" id="gridCols" value="3" min="1" max="10" 
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-600">Rows</label>
+                                <input type="number" id="gridRows" value="3" min="1" max="10" 
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sticker Size -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Sticker Size (mm)</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-gray-600">Width</label>
+                                <input type="number" id="stickerWidth" value="60" min="10" max="200" 
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-600">Height</label>
+                                <input type="number" id="stickerHeight" value="60" min="10" max="200" 
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Spacing -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Spacing Between Stickers (mm)</label>
+                        <input type="number" id="spacing" value="5" min="0" max="50" 
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <!-- Margin -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Page Margin (mm)</label>
+                        <input type="number" id="margin" value="10" min="0" max="50" 
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="space-y-3">
+                        <button id="generateBtn" class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold">
+                            🔄 Generate Preview
+                        </button>
+                        <button id="printBtn" class="w-full bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition font-semibold">
+                            🖨️ Print
+                        </button>
+                        <button id="downloadBtn" class="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition font-semibold">
+                            📥 Download PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Preview -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Preview</h2>
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 overflow-auto" style="max-height: 800px;">
+                    <div id="printArea" class="bg-white mx-auto"></div>
+                </div>
+                <p id="previewText" class="text-center text-gray-500 mt-4">Upload an image to start</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cropper = null;
+        let croppedImageData = null;
+        let originalImage = null;
+
+        // Paper sizes in mm
+        const paperSizes = {
+            a4: { width: 210, height: 297 },
+            letter: { width: 215.9, height: 279.4 },
+            a5: { width: 148, height: 210 }
+        };
+
+        // Upload handler
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    originalImage = event.target.result;
+                    showCropSection(event.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function showCropSection(imageSrc) {
+            const cropSection = document.getElementById('cropSection');
+            const cropImage = document.getElementById('cropImage');
+
+            cropImage.src = imageSrc;
+            cropSection.classList.remove('hidden');
+
+            if (cropper) {
+                cropper.destroy();
+            }
+
+            cropper = new Cropper(cropImage, {
+                aspectRatio: NaN,
+                viewMode: 1,
+                autoCropArea: 1,
+                responsive: true,
+                background: false,
+            });
+        }
+
+        // Crop button
+        document.getElementById('cropBtn').addEventListener('click', function() {
+            if (cropper) {
+                const canvas = cropper.getCroppedCanvas();
+                croppedImageData = canvas.toDataURL('image/png');
+                document.getElementById('settingsSection').classList.remove('hidden');
+                document.getElementById('previewText').textContent = 'Click "Generate Preview" to see layout';
+                generatePreview();
+            }
+        });
+
+        // Reset crop
+        document.getElementById('resetCropBtn').addEventListener('click', function() {
+            if (cropper) {
+                cropper.reset();
+            }
+        });
+
+        // Generate preview
+        document.getElementById('generateBtn').addEventListener('click', generatePreview);
+
+        // Update preview on input change
+        ['gridCols', 'gridRows', 'stickerWidth', 'stickerHeight', 'spacing', 'margin', 'paperSize'].forEach(id => {
+            document.getElementById(id).addEventListener('input', generatePreview);
+        });
+
+        function generatePreview() {
+            if (!croppedImageData) return;
+
+            const paperSize = document.getElementById('paperSize').value;
+            const cols = parseInt(document.getElementById('gridCols').value);
+            const rows = parseInt(document.getElementById('gridRows').value);
+            const stickerWidth = parseInt(document.getElementById('stickerWidth').value);
+            const stickerHeight = parseInt(document.getElementById('stickerHeight').value);
+            const spacing = parseInt(document.getElementById('spacing').value);
+            const margin = parseInt(document.getElementById('margin').value);
+
+            const paper = paperSizes[paperSize];
+            const printArea = document.getElementById('printArea');
+
+            // Calculate scale (3.78 pixels per mm for screen display)
+            const scale = 2.5;
+            const pageWidth = paper.width * scale;
+            const pageHeight = paper.height * scale;
+
+            printArea.style.width = pageWidth + 'px';
+            printArea.style.height = pageHeight + 'px';
+            printArea.style.padding = (margin * scale) + 'px';
+            printArea.style.position = 'relative';
+
+            // Clear previous stickers
+            printArea.innerHTML = '';
+
+            // Create grid
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const sticker = document.createElement('img');
+                    sticker.src = croppedImageData;
+                    sticker.style.width = (stickerWidth * scale) + 'px';
+                    sticker.style.height = (stickerHeight * scale) + 'px';
+                    sticker.style.position = 'absolute';
+                    sticker.style.left = (col * (stickerWidth + spacing) * scale) + 'px';
+                    sticker.style.top = (row * (stickerHeight + spacing) * scale) + 'px';
+                    sticker.style.objectFit = 'contain';
+                    printArea.appendChild(sticker);
+                }
+            }
+
+            document.getElementById('previewText').textContent = `${cols * rows} stickers on ${paperSize.toUpperCase()} page`;
+        }
+
+        // Print function
+        document.getElementById('printBtn').addEventListener('click', function() {
+            if (!croppedImageData) {
+                alert('Please upload and crop an image first!');
+                return;
+            }
+            window.print();
+        });
+
+        // Download PDF
+        document.getElementById('downloadBtn').addEventListener('click', async function() {
+            if (!croppedImageData) {
+                alert('Please upload and crop an image first!');
+                return;
+            }
+
+            const printArea = document.getElementById('printArea');
+            const paperSize = document.getElementById('paperSize').value;
+            const paper = paperSizes[paperSize];
+
+            // Show loading
+            this.textContent = '⏳ Generating PDF...';
+            this.disabled = true;
+
+            try {
+                const canvas = await html2canvas(printArea, {
+                    scale: 2,
+                    backgroundColor: '#ffffff'
+                });
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: paper.width < paper.height ? 'portrait' : 'landscape',
+                    unit: 'mm',
+                    format: [paper.width, paper.height]
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                pdf.addImage(imgData, 'PNG', 0, 0, paper.width, paper.height);
+                pdf.save('stickers.pdf');
+            } catch (error) {
+                alert('Error generating PDF: ' + error.message);
+            }
+
+            // Reset button
+            this.textContent = '📥 Download PDF';
+            this.disabled = false;
+        });
+    </script>
+</body>
+</html>
