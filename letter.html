@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,28 +10,42 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <style>
+        .grid-box i {
+            font-size: 79px !important;
+        }
+
         @media print {
-            .no-print { display: none !important; }
-            .print-page { page-break-after: always; }
-            body { margin: 0; padding: 0; }
-            .a4-page { 
-                width: 210mm; 
-                height: 297mm; 
+            .no-print {
+                display: none !important;
+            }
+
+            .print-page {
+                page-break-after: always;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .a4-page {
+                width: 210mm;
+                height: 297mm;
                 margin: 0;
                 padding: 10mm;
                 box-shadow: none !important;
             }
         }
-        
+
         .a4-page {
             width: 210mm;
             min-height: 297mm;
             padding: 10mm;
             margin: 20px auto;
             background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        
+
         .grid-box {
             border: 2px solid #333;
             aspect-ratio: 1;
@@ -44,36 +58,37 @@
             transition: all 0.2s;
             outline: none;
         }
-        
+
         .grid-box:hover {
             background-color: #f3f4f6;
         }
-        
+
         .grid-box.selected {
             background-color: #dbeafe;
             border-color: #3b82f6;
         }
-        
+
         .grid-box:focus {
             background-color: #fef3c7;
             border-color: #f59e0b;
         }
-        
+
         .grid-box.drag-over {
             background-color: #bfdbfe !important;
             border-color: #3b82f6 !important;
             border-width: 3px;
         }
-        
+
         .icon-drag {
             user-select: none;
         }
-        
+
         .icon-drag:active {
             opacity: 0.7;
         }
     </style>
 </head>
+
 <body class="bg-gray-100">
     <!-- Control Panel -->
     <div class="no-print fixed top-0 left-0 right-0 bg-white shadow-lg z-50 p-2">
@@ -81,79 +96,93 @@
             <div class="flex items-center justify-between gap-4">
                 <!-- Title -->
                 <h1 class="text-lg font-bold">Template Generator</h1>
-                
+
                 <!-- Actions -->
                 <div class="flex gap-2">
-                    <button onclick="clearAll()" 
-                            class="px-3 py-1 text-sm bg-gray-600 text-white rounded hover:bg-gray-700">
+                    <button onclick="clearAll()"
+                        class="px-3 py-1 text-sm bg-gray-600 text-white rounded hover:bg-gray-700">
                         Clear All
                     </button>
-                    <button onclick="fillAlphabet()" 
-                            class="px-3 py-1 text-sm bg-purple-600 text-white rounded hover:bg-purple-700">
+                    <button onclick="fillAlphabet()"
+                        class="px-3 py-1 text-sm bg-purple-600 text-white rounded hover:bg-purple-700">
                         Fill A-Z
                     </button>
                     <button data-bs-toggle="modal" data-bs-target="#letterModal"
-                            class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
+                        class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
                         Fill Same Letter
                     </button>
                     <button data-bs-toggle="modal" data-bs-target="#arrowModal"
-                            class="px-3 py-1 text-sm bg-teal-600 text-white rounded hover:bg-teal-700">
+                        class="px-3 py-1 text-sm bg-teal-600 text-white rounded hover:bg-teal-700">
                         Fill Same Arrow
                     </button>
-                    <button onclick="window.print()" 
-                            class="px-3 py-1 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                    <button onclick="window.print()"
+                        class="px-3 py-1 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700">
                         Print
                     </button>
                 </div>
-                
+
                 <!-- Icons -->
                 <div class="flex gap-1">
-                    <div draggable="true" data-icon="arrow-up" class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
+                    <div draggable="true" data-icon="arrow-up"
+                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
                         <i class="fas fa-arrow-up text-gray-700 text-lg"></i>
                     </div>
-                    <div draggable="true" data-icon="arrow-down" class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
+                    <div draggable="true" data-icon="arrow-down"
+                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
                         <i class="fas fa-arrow-down text-gray-700 text-lg"></i>
                     </div>
-                    <div draggable="true" data-icon="arrow-left" class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
+                    <div draggable="true" data-icon="arrow-left"
+                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
                         <i class="fas fa-arrow-left text-gray-700 text-lg"></i>
                     </div>
-                    <div draggable="true" data-icon="arrow-right" class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
+                    <div draggable="true" data-icon="arrow-right"
+                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
                         <i class="fas fa-arrow-right text-gray-700 text-lg"></i>
                     </div>
-                    <div draggable="true" data-icon="arrow-up-right" class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
-                        <i class="fas fa-arrow-up text-gray-700 text-lg" style="transform: rotate(45deg); display: inline-block;"></i>
+                    <div draggable="true" data-icon="arrow-up-right"
+                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
+                        <i class="fas fa-arrow-up text-gray-700 text-lg"
+                            style="transform: rotate(45deg); display: inline-block;"></i>
                     </div>
-                    <div draggable="true" data-icon="arrow-down-right" class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
-                        <i class="fas fa-arrow-down text-gray-700 text-lg" style="transform: rotate(-45deg); display: inline-block;"></i>
+                    <div draggable="true" data-icon="arrow-down-right"
+                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
+                        <i class="fas fa-arrow-down text-gray-700 text-lg"
+                            style="transform: rotate(-45deg); display: inline-block;"></i>
                     </div>
-                    <div draggable="true" data-icon="arrow-down-left" class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
-                        <i class="fas fa-arrow-down text-gray-700 text-lg" style="transform: rotate(45deg); display: inline-block;"></i>
+                    <div draggable="true" data-icon="arrow-down-left"
+                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
+                        <i class="fas fa-arrow-down text-gray-700 text-lg"
+                            style="transform: rotate(45deg); display: inline-block;"></i>
                     </div>
-                    <div draggable="true" data-icon="arrow-up-left" class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
-                        <i class="fas fa-arrow-up text-gray-700 text-lg" style="transform: rotate(-45deg); display: inline-block;"></i>
+                    <div draggable="true" data-icon="arrow-up-left"
+                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
+                        <i class="fas fa-arrow-up text-gray-700 text-lg"
+                            style="transform: rotate(-45deg); display: inline-block;"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <!-- Spacer for fixed header -->
     <div class="no-print" style="height: 60px;"></div>
 
     <!-- Letter Modal -->
-    <div class="modal fade no-print" id="letterModal" tabindex="-1" aria-labelledby="letterModalLabel" aria-hidden="true">
+    <div class="modal fade no-print" id="letterModal" tabindex="-1" aria-labelledby="letterModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title" id="letterModalLabel">
                         <i class="fas fa-font me-2"></i>Fill Same Letter
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <p class="text-muted mb-3">Enter a letter to fill all boxes:</p>
-                    <input type="text" id="letterInput" class="form-control form-control-lg text-center text-uppercase" 
-                           maxlength="1" placeholder="Type a letter (A-Z)" autofocus>
+                    <input type="text" id="letterInput" class="form-control form-control-lg text-center text-uppercase"
+                        maxlength="1" placeholder="Type a letter (A-Z)" autofocus>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -173,7 +202,8 @@
                     <h5 class="modal-title" id="arrowModalLabel">
                         <i class="fas fa-arrows-alt me-2"></i>Fill Same Arrow
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <p class="text-muted mb-4">Choose an arrow direction to fill all boxes:</p>
@@ -234,33 +264,33 @@
             </div>
         </div>
     </div>
-    
+
     <!-- A4 Printable Page -->
     <div id="printPage" class="a4-page print-page">
         <div id="gridContainer" class="grid gap-2" style="grid-template-columns: repeat(8, 1fr);">
             <!-- Grid will be generated here -->
         </div>
     </div>
-    
+
     <script>
         let selectedBoxes = new Set();
         let draggedIconName = null;
-        
+
         function generateGrid() {
             const rows = 8;  // Fixed 8x8 grid
             const cols = 8;
             const container = document.getElementById('gridContainer');
-            
+
             container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
             container.innerHTML = '';
             selectedBoxes.clear();
-            
+
             for (let i = 0; i < rows * cols; i++) {
                 const box = document.createElement('div');
                 box.className = 'grid-box';
                 box.contentEditable = 'true';
                 box.dataset.index = i;
-                
+
                 // Handle direct typing
                 box.addEventListener('input', (e) => {
                     const text = e.target.innerText.trim();
@@ -278,7 +308,7 @@
                         e.target.innerText = text.toUpperCase();
                     }
                 });
-                
+
                 // Handle Enter key
                 box.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
@@ -287,7 +317,7 @@
                         if (nextBox) nextBox.focus();
                     }
                 });
-                
+
                 // Handle selection with Ctrl/Cmd + Click
                 box.addEventListener('click', (e) => {
                     if (e.ctrlKey || e.metaKey) {
@@ -295,48 +325,48 @@
                         toggleSelection(i);
                     }
                 });
-                
+
                 // DRAG AND DROP - Allow boxes to receive dropped icons
                 box.addEventListener('dragover', (e) => {
                     e.preventDefault();
                     box.classList.add('drag-over');
                 });
-                
+
                 box.addEventListener('dragleave', (e) => {
                     box.classList.remove('drag-over');
                 });
-                
+
                 box.addEventListener('drop', (e) => {
                     e.preventDefault();
                     box.classList.remove('drag-over');
-                    
+
                     if (draggedIconName) {
                         dropIconIntoBox(box, draggedIconName);
                     }
                 });
-                
+
                 container.appendChild(box);
             }
-            
+
             // Setup drag and drop for icons
             setupIconDragAndDrop();
         }
-        
+
         function setupIconDragAndDrop() {
             const iconElements = document.querySelectorAll('.icon-drag');
-            
+
             iconElements.forEach(iconEl => {
                 iconEl.addEventListener('dragstart', (e) => {
                     draggedIconName = iconEl.dataset.icon;
                     e.dataTransfer.effectAllowed = 'copy';
                 });
-                
+
                 iconEl.addEventListener('dragend', (e) => {
                     draggedIconName = null;
                 });
             });
         }
-        
+
         function dropIconIntoBox(box, iconName) {
             // Handle diagonal arrows with rotation
             if (iconName === 'arrow-up-right') {
@@ -350,11 +380,11 @@
             } else {
                 box.innerHTML = `<i class="fas fa-${iconName}"></i>`;
             }
-            
+
             // Disable editing when icon is added
             box.contentEditable = 'false';
         }
-        
+
         function toggleSelection(index) {
             const box = document.querySelector(`[data-index="${index}"]`);
             if (selectedBoxes.has(index)) {
@@ -365,7 +395,7 @@
                 box.classList.add('selected');
             }
         }
-        
+
         function clearAll() {
             const boxes = document.querySelectorAll('.grid-box');
             boxes.forEach(box => {
@@ -375,73 +405,74 @@
             });
             selectedBoxes.clear();
         }
-        
+
         function fillAlphabet() {
             const boxes = document.querySelectorAll('.grid-box');
             const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            
+
             boxes.forEach((box, index) => {
                 if (index < alphabet.length) {
                     box.innerHTML = alphabet[index];
                 }
             });
-            
+
             selectedBoxes.clear();
             boxes.forEach(box => box.classList.remove('selected'));
         }
-        
+
         function applyLetter() {
             const letterInput = document.getElementById('letterInput');
             const letter = letterInput.value.trim();
-            
+
             if (!letter || letter.length === 0) {
                 alert('Please enter a letter!');
                 return;
             }
-            
+
             const upperLetter = letter[0].toUpperCase();
             const boxes = document.querySelectorAll('.grid-box');
-            
+
             boxes.forEach(box => {
                 box.innerHTML = upperLetter;
                 box.contentEditable = 'true';
             });
-            
+
             selectedBoxes.clear();
             boxes.forEach(box => box.classList.remove('selected'));
-            
+
             // Close modal and reset input
             letterInput.value = '';
             bootstrap.Modal.getInstance(document.getElementById('letterModal')).hide();
         }
-        
+
         function applyArrow(iconName) {
             const boxes = document.querySelectorAll('.grid-box');
             boxes.forEach(box => {
                 dropIconIntoBox(box, iconName);
             });
-            
+
             selectedBoxes.clear();
             boxes.forEach(box => box.classList.remove('selected'));
-            
+
             // Close modal
             bootstrap.Modal.getInstance(document.getElementById('arrowModal')).hide();
         }
-        
+
         // Initialize grid on load
         generateGrid();
-        
+
         // Auto-focus letter input when modal opens
         document.getElementById('letterModal').addEventListener('shown.bs.modal', function () {
             document.getElementById('letterInput').focus();
         });
-        
+
         // Allow Enter key to submit letter
-        document.getElementById('letterInput').addEventListener('keypress', function(e) {
+        document.getElementById('letterInput').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 applyLetter();
             }
         });
     </script>
 </body>
+
 </html>
